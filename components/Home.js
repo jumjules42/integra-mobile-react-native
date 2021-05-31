@@ -10,6 +10,10 @@ import {
     View,
     TouchableOpacity,
 } from 'react-native';
+import { Divider } from 'react-native-elements';
+
+import logo from '../assets/logo.png';
+
 import firebase from '../configs/firebase.config.js';
 import supabase from '../configs/supabase.config.js';
 
@@ -62,19 +66,26 @@ function Home(props) {
         getData();
     }, []);
 
-    console.log(storage);
+    console.log(familyGroup);
     return (
         <ImageBackground style={styles.backgroundContainer}>
             <View>
-                {familyGroup.length > 0 ? (
-                    familyGroup.map((el, idx) => (
-                        <Text style={styles.text} key={`familiar-${idx}`}>
+                {familyGroup.map((el, idx) => (
+                    <View key={`familiar-${idx}`} style={styles.cardContainer}>
+                        <Text style={styles.text}>
+                            {el.family_group} {el.dni} {el.plan_id} {el.id}
+                        </Text>
+                        <Text style={styles.text}>
                             {`${el.name} ${el.lastname}`}
                         </Text>
-                    ))
-                ) : (
-                    <Text style={styles.text}>{userData.name}</Text>
-                )}
+                        <Text style={styles.text}>{userData.plans.name}</Text>
+                        <Divider />
+                        <View style={styles.logoContainer}>
+                            <Image source={logo} style={styles.imageLogo} />
+                            <Text style={styles.text}>Integra Salud</Text>
+                        </View>
+                    </View>
+                ))}
             </View>
         </ImageBackground>
     );
@@ -83,16 +94,31 @@ function Home(props) {
 const styles = StyleSheet.create({
     backgroundContainer: {
         flex: 1,
+        flexDirection: 'column',
+        justifyContent: 'space-evenly',
+        alignItems: 'center',
         width: null,
         height: null,
-        justifyContent: 'center',
-        alignItems: 'center',
     },
 
     text: {
         color: 'rgba(0, 0, 0, 0.7)',
         fontSize: 32,
         textAlign: 'center',
+    },
+
+    cardContainer: {
+        width: WIDTH - 25,
+        backgroundColor: 'green',
+        marginBottom: 25,
+    },
+    imageLogo: {
+        width: 50,
+        height: 50,
+    },
+    logoContainer: {
+        flex: 1,
+        justifyContent: 'center',
     },
 });
 
