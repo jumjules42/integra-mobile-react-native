@@ -24,22 +24,6 @@ export default function Login() {
     const [data, setData] = React.useState([]);
     const [input, setInput] = React.useState({ dni: '', pass: '' });
 
-    const fetchData = async () => {
-        try {
-            const { data: user } = await supabase
-                .from('partners')
-                .select('email')
-                .eq('dni', 12345678);
-            setData(user);
-        } catch (err) {
-            console.log(err);
-        }
-    };
-
-    React.useEffect(() => {
-        fetchData();
-    }, []);
-
     const handleShowPass = () => {
         if (!press) {
             setShowPass(false);
@@ -47,6 +31,22 @@ export default function Login() {
         } else {
             setShowPass(true);
             setPress(false);
+        }
+    };
+
+    const handleLogin = async () => {
+        try {
+            const { data: mailUser } = await supabase
+                .from('users')
+                .select('email, dni, role, account, avatar_url')
+                .match({ role: 'affiliate', dni: input.dni });
+            const successInfo = await firebase.auth.signInWithEmailAndPassword(
+                mailUser[0].email,
+                input.pass
+            );
+            console.log(successInfo.user.uid);
+        } catch (error) {
+            alert(error);
         }
     };
 
@@ -105,7 +105,9 @@ export default function Login() {
             </View>
 
             <TouchableOpacity style={styles.btnLogin}>
-                <Text style={styles.text}>Iniciar Sesion</Text>
+                <Text style={styles.text} onPress={handleLogin}>
+                    Iniciar Sesion
+                </Text>
             </TouchableOpacity>
         </ImageBackground>
     );
