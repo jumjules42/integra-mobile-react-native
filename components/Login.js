@@ -8,21 +8,46 @@ import {
     Text,
     View,
     TouchableOpacity,
+    Linking,
 } from 'react-native';
 import bgLogin from '../assets/bgLogin.png';
 import logo from '../assets/logo.png';
 import Icon from 'react-native-vector-icons/Ionicons';
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import firebase from '../configs/firebase.config.js';
 import supabase from '../configs/supabase.config.js';
 
 const { width: WIDTH } = Dimensions.get('window');
 
-export default function Login() {
-    const [showPass, setShowPass] = React.useState(false);
+export default function Login(props) {
+    const [showPass, setShowPass] = React.useState(true);
     const [press, setPress] = React.useState(false);
-    const [data, setData] = React.useState([]);
     const [input, setInput] = React.useState({ dni: '', pass: '' });
+    const [loading, setLoading] = React.useState(false);
+    const [storage, setStorage] = React.useState('');
+
+    const storeData = async (value) => {
+        try {
+            if (typeof value === 'object' || typeof value === 'array') {
+                const jsonValue = JSON.stringify(value);
+                await AsyncStorage.setItem('@userdata', jsonValue);
+            } else {
+                await AsyncStorage.setItem('@userdata', value);
+            }
+        } catch (error) {
+            alert(error);
+        }
+    };
+
+    const getData = async () => {
+        try {
+            const jsonValue = await AsyncStorage.getItem('@userdata');
+            return setStorage(jsonValue ? JSON.parse(jsonValue) : null);
+        } catch (error) {
+            alert(error);
+        }
+    };
 
     const handleShowPass = () => {
         if (!press) {
@@ -34,6 +59,10 @@ export default function Login() {
         }
     };
 
+    React.useEffect(() => {
+        getData();
+    }, []);
+
     const handleLogin = async () => {
         try {
             const { data: mailUser } = await supabase
@@ -44,7 +73,10 @@ export default function Login() {
                 mailUser[0].email,
                 input.pass
             );
-            console.log(successInfo.user.uid);
+            storeData(mailUser);
+            if (successInfo.user.uid) {
+                props.navigation.navigate('Home');
+            }
         } catch (error) {
             alert(error);
         }
@@ -54,7 +86,7 @@ export default function Login() {
         <ImageBackground source={bgLogin} style={styles.backgroundContainer}>
             <View style={styles.logoContainer}>
                 <Image source={logo} style={styles.logo} />
-                <Text style={styles.logoText}>Iniciar Sesion</Text>
+                <Text style={styles.logoText}>Integra Salud</Text>
             </View>
 
             <View style={styles.inputContainer}>
@@ -109,6 +141,18 @@ export default function Login() {
                     Iniciar Sesion
                 </Text>
             </TouchableOpacity>
+            <TouchableOpacity style={styles.btnRegister}>
+                <Text
+                    style={styles.text}
+                    onPress={() =>
+                        Linking.openURL(
+                            'https://integra-platform.web.app/#contact'
+                        )
+                    }
+                >
+                    Asociate
+                </Text>
+            </TouchableOpacity>
         </ImageBackground>
     );
 }
@@ -131,9 +175,9 @@ const styles = StyleSheet.create({
     },
     logoText: {
         color: 'white',
-        fontSize: 20,
+        fontSize: 32,
         marginTop: 10,
-        opacity: 0.5,
+        opacity: 1,
     },
     input: {
         width: WIDTH - 55,
@@ -158,17 +202,31 @@ const styles = StyleSheet.create({
         top: 10,
         right: 37,
     },
+    text: {
+        color: 'rgba(255, 255, 255, 0.7)',
+        fontSize: 24,
+        textAlign: 'center',
+    },
     btnLogin: {
         width: WIDTH - 55,
         height: 45,
         borderRadius: 25,
-        backgroundColor: 'green',
+        backgroundColor: '#00897B',
+        fontWeight: 'bold',
+        fontSize: 36,
         marginTop: 20,
         justifyContent: 'center',
     },
-    text: {
-        color: 'rgba(255, 255, 255, 0.7)',
-        fontSize: 16,
-        textAlign: 'center',
+    btnRegister: {
+        width: WIDTH - 55,
+        height: 45,
+        borderRadius: 25,
+        backgroundColor: 'transparent',
+        borderColor: 'white',
+        borderWidth: 1,
+        fontWeight: 'bold',
+        fontSize: 36,
+        marginTop: 20,
+        justifyContent: 'center',
     },
 });
