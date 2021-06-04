@@ -8,15 +8,18 @@ import {
     Text,
     View,
     TouchableOpacity,
+    FlatList,
 } from 'react-native';
 import { Divider } from 'react-native-elements';
-
 import logo from '../assets/logo.png';
-
 import firebase from '../configs/firebase.config.js';
 import supabase from '../configs/supabase.config.js';
 
+const { width: widthS, height: heightS } = Dimensions.get('screen');
 const { width: WIDTH } = Dimensions.get('window');
+
+const imageW = widthS * 0.7;
+const imageH = imageW * 1.54;
 
 function Home(props) {
     const [userEmail, setUserEmail] = React.useState('');
@@ -58,6 +61,7 @@ function Home(props) {
         <SafeAreaView style={styles.container}>
             <ScrollView style={styles.ScrollView}>
                 <View>
+                    <FlatList data={familyGroup.map((el) => el)} />
                     {familyGroup.map((el, idx) => (
                         <View
                             key={`familiar-${idx}`}
