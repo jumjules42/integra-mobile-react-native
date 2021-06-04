@@ -1,10 +1,9 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
+import { SafeAreaView } from 'react-native';
+import { ScrollView } from 'react-native';
 import {
     Dimensions,
-    ImageBackground,
     Image,
-    TextInput,
     StyleSheet,
     Text,
     View,
@@ -23,7 +22,6 @@ function Home(props) {
     const [userEmail, setUserEmail] = React.useState('');
     const [userData, setUserData] = React.useState([]);
     const [familyGroup, setFamilyGroup] = React.useState([]);
-    const [storage, setStorage] = React.useState('');
 
     const fetchUserData = async () => {
         firebase.auth.onAuthStateChanged((user) => {
@@ -52,61 +50,61 @@ function Home(props) {
         }
     };
 
-    const getData = async () => {
-        try {
-            const jsonValue = await AsyncStorage.getItem('@userdata');
-            return setStorage(jsonValue ? JSON.parse(jsonValue) : null);
-        } catch (error) {
-            alert(error);
-        }
-    };
-
     React.useEffect(() => {
         fetchUserData();
-        getData();
     }, []);
 
-    console.log(familyGroup);
     return (
-        <ImageBackground style={styles.backgroundContainer}>
-            <View>
-                {familyGroup.map((el, idx) => (
-                    <View key={`familiar-${idx}`} style={styles.cardContainer}>
-                        <Text style={styles.text}>
-                            {el.family_group} {el.dni} {el.plan_id} {el.id}
-                        </Text>
-                        <Text style={styles.text}>
-                            {`${el.name} ${el.lastname}`}
-                        </Text>
-                        <Text style={styles.text}>{userData.plans.name}</Text>
-                        <Divider />
-                        <View style={styles.logoContainer}>
-                            <Image source={logo} style={styles.imageLogo} />
-                            <Text style={styles.text}>Integra Salud</Text>
+        <SafeAreaView style={styles.container}>
+            <ScrollView style={styles.ScrollView}>
+                <View>
+                    {familyGroup.map((el, idx) => (
+                        <View
+                            key={`familiar-${idx}`}
+                            style={styles.cardContainer}
+                        >
+                            <Text style={styles.textDigits}>
+                                {el.family_group} {el.dni} {el.plan_id} {el.id}
+                            </Text>
+                            <Text style={styles.text}>
+                                {`${el.name} ${el.lastname}`}
+                            </Text>
+                            <Text style={styles.text}>
+                                {userData.plans.name}
+                            </Text>
+                            <Divider />
+                            <View style={styles.logoContainer}>
+                                <Image source={logo} style={styles.imageLogo} />
+                                <Text style={styles.text}>Integra Salud</Text>
+                            </View>
                         </View>
-                    </View>
-                ))}
-            </View>
-        </ImageBackground>
+                    ))}
+                </View>
+            </ScrollView>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-    backgroundContainer: {
+    container: {
         flex: 1,
-        flexDirection: 'column',
-        justifyContent: 'space-evenly',
         alignItems: 'center',
-        width: null,
-        height: null,
+        justifyContent: 'center',
     },
 
+    scrollView: {
+        marginHorizontal: 20,
+    },
     text: {
         color: 'rgba(0, 0, 0, 0.7)',
         fontSize: 32,
         textAlign: 'center',
     },
-
+    textDigits: {
+        color: 'rgba(0, 0, 0, 0.7)',
+        fontSize: 32,
+        textAlign: 'center',
+    },
     cardContainer: {
         width: WIDTH - 25,
         backgroundColor: 'green',
@@ -118,7 +116,10 @@ const styles = StyleSheet.create({
     },
     logoContainer: {
         flex: 1,
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        flexDirection: 'row',
+        padding: 10,
     },
 });
 
