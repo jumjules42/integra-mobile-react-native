@@ -1,5 +1,4 @@
 import React from 'react';
-import BackgroundTimer from 'react-native-background-timer';
 import {
     Dimensions,
     Image,
@@ -8,25 +7,59 @@ import {
     View,
     TouchableOpacity,
     FlatList,
+    AppState,
 } from 'react-native';
+import moment from 'moment';
 import { Divider } from 'react-native-elements';
 import logo from '../assets/logo.png';
 import firebase from '../configs/firebase.config.js';
 import supabase from '../configs/supabase.config.js';
 
 const { width: widthS, height: heightS } = Dimensions.get('screen');
-const { width: WIDTH } = Dimensions.get('window');
 
 const cardW = widthS * 0.8;
 const cardH = cardW * 1.54;
 
 function Home() {
-    const [secondsLeft, setSecondsLeft] = React.useState(3601);
-    const [timerOn, setTimerOn] = React.useState(false);
-
+    const [countDown, setCountDown] = React.useState({
+        eventDate: moment
+            .duration()
+            .add({ days: 0, hours: 0, minutes: 1, seconds: 0 }), // add 9 full days, 3 hours, 40 minutes and 50 seconds
+        days: 0,
+        hours: 0,
+        mins: 0,
+        secs: 0,
+    });
+    const [token, setToken] = React.useState(
+        Math.floor(Math.random() * (999 - 100)) + 100
+    );
     const [userEmail, setUserEmail] = React.useState('');
     const [userData, setUserData] = React.useState([]);
     const [familyGroup, setFamilyGroup] = React.useState([]);
+
+    const updateTimer = () => {
+        const x = setInterval(() => {
+            let { eventDate } = countDown;
+
+            if (eventDate <= 0) {
+                clearInterval(x);
+            } else {
+                eventDate = eventDate.subtract(1, 's');
+                const days = eventDate.days();
+                const hours = eventDate.hours();
+                const mins = eventDate.minutes();
+                const secs = eventDate.seconds();
+
+                setCountDown({
+                    days,
+                    hours,
+                    mins,
+                    secs,
+                    eventDate,
+                });
+            }
+        }, 1000);
+    };
 
     const fetchUserData = async () => {
         firebase.auth.onAuthStateChanged((user) => {
@@ -57,12 +90,8 @@ function Home() {
 
     React.useEffect(() => {
         fetchUserData();
-        if (timerOn) startTimer();
-        else BackgroundTimer.stopBackgroundTimer();
-        return () => {
-            BackgroundTimer.stopBackgroundTimer();
-        };
-    }, [timerOn]);
+        updateTimer();
+    }, []);
 
     return (
         <View style={{ flex: 1, backgroundColor: '#000' }}>
@@ -72,7 +101,6 @@ function Home() {
                 horizontal
                 pagingEnabled
                 renderItem={({ item }) => {
-                    console.log(item);
                     return (
                         <View
                             style={{
@@ -130,6 +158,33 @@ function Home() {
                                     {userData.plans.name}
                                 </Text>
                                 <Divider />
+                                <View
+                                    style={{
+                                        flex: 1,
+                                        flexDirection: 'row',
+                                        justifyContent: 'space-evenly',
+                                        alignItems: 'center',
+                                        color: '#fff',
+                                        marginTop: 36,
+                                    }}
+                                >
+                                    <Text
+                                        style={{
+                                            color: '#fff',
+                                            fontSize: 24,
+                                        }}
+                                    >
+                                        {countDown.mins}:{countDown.secs}
+                                    </Text>
+                                    <Text
+                                        style={{
+                                            fontSize: 24,
+                                            color: '#fff',
+                                        }}
+                                    >
+                                        TOKEN: {token}
+                                    </Text>
+                                </View>
 
                                 <View style={styles.logoContainer}>
                                     <Image
